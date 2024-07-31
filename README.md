@@ -5,11 +5,21 @@ This project involves setting up a data warehouse on Google Cloud Platform (GCP)
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Project Architecture](#project-architecture)
+- [Power BI Dashboard](#power-bi-dashboard)
 - [Prerequisites](#prerequisites)
 
 ## Project Overview
 
 The goal of this project is to create a data warehouse that stores historical product demand data and provides insights through a Power BI dashboard. The infrastructure is provisioned using Terraform, data is loaded into BigQuery with a Python script, and Power BI is used for data visualization.
+
+## Project Architecture
+
+![Project architecture](images/Architecture.png "Architecture diagram")
+
+## Power BI Dashboard
+
+![Dashboard](images/Report.png "Power BI dashboard")
 
 ## Prerequisites
 
