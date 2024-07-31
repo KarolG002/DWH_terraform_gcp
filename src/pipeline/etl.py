@@ -13,12 +13,19 @@ credentials = service_account.Credentials.from_service_account_file(
 dataset_id = "dwh_warehouse_dataset"
 project_id = "dwh-terraform-gcp"
 def load_data(filepath):
-    raw_data = pd.read_csv(filepath)
-    return raw_data
+    try:
+        raw_data = pd.read_csv(filepath)
+        return raw_data
+    except FileNotFoundError:
+        print(f"File not found: {filepath}")
+        return None
 
 
 
 def transform_to_tables(raw_data):
+    if raw_data is None:
+        return None, None, None, None, None
+    
     fact_product = raw_data
 
     dim_product = raw_data[['Product_Code', 'Product_Category']].drop_duplicates()
@@ -34,17 +41,21 @@ def transform_to_tables(raw_data):
 def upload_to_bigquery(tables, table_names):
     pandas_gbq.context.credentials = credentials
     for table, table_name in zip(tables, table_names):
+        print(f"Uploading {table_name} to BigQuery...")
         pandas_gbq.to_gbq(table, f"{dataset_id}.{table_name}", project_id=project_id, if_exists='replace')
 
+def main():
+    raw_data = load_data(filepath)
+    if raw_data is not None:
+        fact_product, dim_product, dim_warehouse, dim_product_category, dim_date = transform_to_tables(raw_data)
+        
+        tables = [fact_product, dim_product, dim_warehouse, dim_product_category, dim_date]
+        table_names = ["fact_product", "dim_product", "dim_warehouse", "dim_product_category", "dim_date"]
+        
+        upload_to_bigquery(tables, table_names)
+        print("Data upload complete.")
+    else:
+        print("No data to process.")
 
 if __name__ == "__main__":
-    raw_data = load_data(filepath)
-    fact_product, dim_product, dim_warehouse, dim_product_category, dim_date = transform_to_tables(raw_data)
-    tables = [fact_product, dim_product, dim_warehouse, dim_product_category, dim_date]
-    table_names = ["fact_product", "dim_product", "dim_warehouse", "dim_product_category", "dim_date"]
-    upload_to_bigquery(tables, table_names)
-    # print(fact_product)
-    # print(dim_product)
-    # print(dim_warehouse)
-    # print(dim_product_category)
-    # print(dim_date)
+    main()
